@@ -47,7 +47,7 @@ public class Peer extends ChordNode {
     void join(Peer toPeer) {
 
         Peer peerWhoShares = null;
-        if (toPeer != null) peerWhoShares = (Peer) toPeer.findSuccessorFor(getID());
+        if (toPeer != null) peerWhoShares = (Peer) toPeer.findSuccessor(getID());
         super.join(toPeer);
         if (peerWhoShares != null) peerWhoShares.shareWith(this);
         //startDaemons(); // не надо тута начинать потоки, надо где-то там и потом
@@ -72,7 +72,7 @@ public class Peer extends ChordNode {
     }
 
     public void putFileToNetwork(NetworkFile file){
-        Peer holder = (Peer) this.findSuccessorFor(file.hashCode());
+        Peer holder = (Peer) this.findSuccessor(file.hashCode());
         holder.addFile(file);
     }
 
@@ -82,7 +82,7 @@ public class Peer extends ChordNode {
 
     public Peer getPeerThatHoldingFile(String filename){
 
-        return (Peer) this.findSuccessorFor(filename.hashCode());
+        return (Peer) this.findSuccessor(filename.hashCode());
     }
 
     private NetworkFile getFile(String filename){
@@ -94,10 +94,10 @@ public class Peer extends ChordNode {
 
     @Override
     public void disconnect() {
-        Peer neighbour = (Peer) this.predecessor();
+        Peer neighbour = (Peer) this.findSuccessor(getID()+1);
         super.disconnect();
         //TO-DO - переносим все файлы на соседей
-        networkFiles.forEach(file -> ((Peer)neighbour.findSuccessorFor(file.hashCode())).addFile(file));
+        networkFiles.forEach(neighbour::addFile);
         networkFiles.clear();
     }
 

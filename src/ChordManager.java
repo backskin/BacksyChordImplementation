@@ -67,13 +67,7 @@ public class ChordManager {
 
         // Запустим потоки фикса и стабилизации на всех устройствах
         peers.forEach(Peer::startDaemons);
-        //Подождем пока потоки отработают хоть немного
-        try {
-            System.out.println("Обработка на компах... (Ждите 2-3 секунды)");
-            TimeUnit.MILLISECONDS.sleep(2600);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
         // Можем продолжать работу на установленной сетке
 
         // Придумаем 200 файлов, например
@@ -108,11 +102,14 @@ public class ChordManager {
 
         System.out.println("========================= Let's disconnect some poor guys ===========================");
 
-
         disconnectGuy(peers.get(4));
+
         disconnectGuy(peers.get(7));
+
         disconnectGuy(peers.get(12));
+
         disconnectGuy(unknown);
+
         System.out.println("=====================================================================================");
 
         NetworkFile networkFile2 = networkFilesStack.get(177);

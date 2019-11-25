@@ -1,5 +1,3 @@
-import java.util.concurrent.ExecutionException;
-
 public abstract class ChordNode {
 
     final int powTwo;
@@ -37,7 +35,7 @@ public abstract class ChordNode {
         for (int i = 0; i < fingers.length; i++) fingers[i] = new Finger(i);
     }
 
-    protected final ChordNode findSuccessorFor(int id){
+    protected final ChordNode findSuccessor(int id){
         return findPredecessor(id).fingers[0].node;
     }
 
@@ -59,7 +57,7 @@ public abstract class ChordNode {
 
             int id = identifier - fingers[i].exponentOfTwo;
             id = id < 0 ? powTwo : id;
-            findPredecessor(id).updateFingerTable(fingers[0].node, i, 1);
+            findPredecessor(id).updateFingerTable(fingers[0].node, i);
         }
 //        TO-DO: пока нормально отконнектиться не получается, если делать последние две строки
 //        predecessor = null;
@@ -84,9 +82,10 @@ public abstract class ChordNode {
     }
 
     protected final void fixFingers(){
-        lastFinger += 1;
-        if (lastFinger >= fingers.length) lastFinger = 0;
-        fingers[lastFinger].node = findSuccessorFor(fingers[lastFinger].start);
+//        lastFinger += 1;
+//        if (lastFinger >= fingers.length) lastFinger = 0;
+        for (Finger finger: fingers) finger.node = findSuccessor(finger.start);
+//        fingers[lastFinger].node = findSuccessor(fingers[lastFinger].start);
     }
 
     private ChordNode findPredecessor(int id){
@@ -106,7 +105,7 @@ public abstract class ChordNode {
 
     private void initFingerTable(ChordNode node){
 
-        fingers[0].node = node.findSuccessorFor(fingers[0].start);
+        fingers[0].node = node.findSuccessor(fingers[0].start);
         predecessor = fingers[0].node.predecessor;
         fingers[0].node.predecessor = this;
 
@@ -114,19 +113,19 @@ public abstract class ChordNode {
             if (inRange(fingers[i + 1].start, identifier, fingers[i].node.identifier, -1))
                 fingers[i + 1].node = fingers[i].node;
             else
-                fingers[i + 1].node = node.findSuccessorFor(fingers[i + 1].start);
+                fingers[i + 1].node = node.findSuccessor(fingers[i + 1].start);
     }
 
     private void updateOthers(){
         for (int i = 0, fingersLength = fingers.length; i < fingersLength; i++)
             findPredecessor(identifier - fingers[i].exponentOfTwo)
-                    .updateFingerTable(this, i, 1);
+                    .updateFingerTable(this, i);
     }
 
-    private void updateFingerTable(ChordNode sNode, int i, int deepness) {
+    private void updateFingerTable(ChordNode sNode, int i) {
         if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)) {
             fingers[i].node = sNode;
-            predecessor.updateFingerTable(sNode, i, deepness + 1);
+            predecessor.updateFingerTable(sNode, i);
         }
     }
 
