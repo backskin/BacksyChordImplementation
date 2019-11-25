@@ -2,7 +2,7 @@ import java.util.concurrent.ExecutionException;
 
 public abstract class ChordNode {
 
-    public final int powTwo;
+    final int powTwo;
 
     private class Finger {
 
@@ -61,6 +61,8 @@ public abstract class ChordNode {
             id = id < 0 ? powTwo : id;
             findPredecessor(id).updateFingerTable(fingers[0].node, i, 1);
         }
+        predecessor = null;
+        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
     }
 
     protected final void stabilize(){

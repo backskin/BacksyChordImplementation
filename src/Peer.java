@@ -3,19 +3,19 @@ import java.util.*;
 public class Peer extends ChordNode {
 
     private List<NetworkFile> networkFiles;
-    private String IPAddress;
+    private String netName;
     private Thread stabilisation;
     private Thread fixer;
     private Timer stabilTimer = new Timer();
     private Timer fixTimer = new Timer();;
 
-    public String getIPAddress() {
-        return IPAddress;
+    public String getNetName() {
+        return netName;
     }
 
     public Peer(String address, int id, int m) {
         super(id, m);
-        IPAddress = address;
+        netName = address;
         networkFiles = new ArrayList<>();
 
         TimerTask stabilTask = new TimerTask() {@Override public void run() { stabilize();}};
@@ -38,7 +38,7 @@ public class Peer extends ChordNode {
 
     static int num = 0;
 
-    public void invite(Peer newbie){
+    void invite(Peer newbie){
         num += 1;
         System.out.println("the "+ newbie.getID() + " (" + num + ") joins " + this.getID());
         newbie.join(this);
@@ -50,7 +50,7 @@ public class Peer extends ChordNode {
         if (toPeer != null) peerWhoShares = (Peer) toPeer.findSuccessorFor(getID());
         super.join(toPeer);
         if (peerWhoShares != null) peerWhoShares.shareWith(this);
-        //startDaemons();
+        //startDaemons(); // не надо тута начинать потоки, надо где-то там и потом
     }
 
     private void shareWith(Peer node){
@@ -77,8 +77,12 @@ public class Peer extends ChordNode {
     }
 
     public NetworkFile getFileFromNetwork(String filename){
-        Peer holder = (Peer) this.findSuccessorFor(filename.hashCode());
-        return holder.getFile(filename);
+        return getPeerThatHoldingFile(filename).getFile(filename);
+    }
+
+    public Peer getPeerThatHoldingFile(String filename){
+
+        return (Peer) this.findSuccessorFor(filename.hashCode());
     }
 
     private NetworkFile getFile(String filename){
@@ -90,8 +94,11 @@ public class Peer extends ChordNode {
 
     @Override
     public void disconnect() {
+        Peer neighbour = (Peer) this.predecessor();
         super.disconnect();
-
+        //TO-DO - переносим все файлы на соседей
+        networkFiles.forEach(file -> ((Peer)neighbour.findSuccessorFor(file.hashCode())).addFile(file));
+        networkFiles.clear();
     }
 
     private void addFile(NetworkFile file){
@@ -103,5 +110,10 @@ public class Peer extends ChordNode {
                 o -> (o.hashCode() % powTwo + powTwo) % powTwo));
 
         return Collections.unmodifiableList(networkFiles);
+    }
+
+    @Override
+    public String toString() {
+        return "Peer <" + netName + "> (id="+getID()+")";
     }
 }

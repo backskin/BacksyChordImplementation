@@ -21,7 +21,7 @@ public class NetworkFile {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return new NetworkFile("null", new byte[1]);
+        return new NetworkFile("null", new byte[32]);
     }
 
     @Override
