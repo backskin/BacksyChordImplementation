@@ -32,7 +32,7 @@ public class ChordManager {
         System.out.println(peer + " has been disconnected :(");
     }
 
-    private Runnable test1 = () -> {
+    public static void main(String[] args) {
 
         // Пусть это -  наши начальные данные
         int M_intM = 10;
@@ -60,26 +60,19 @@ public class ChordManager {
         positions.forEach(id -> peers.add(new Peer(getRandomString(10), id, M_intM)));
 
         //Присоединяем к сети всех новых пиров через голову
-        peers.forEach(head::invite);
+        peers.forEach(peer -> {
+            peer.join(head);
+            System.out.println("the "+ peer.getID() + " joins " + head.getID());
+        });
         // Не забудем добавить голову в список (это на потом)
         peers.add(head);
         peers.sort(Comparator.comparingInt(ChordNode::getID));
 
-        // Запустим потоки фикса и стабилизации на всех устройствах
-        peers.forEach(Peer::startDaemons);
-        //Подождем пока потоки отработают хоть немного
-        try {
-            System.out.println("Обработка на компах... (Ждите 2-3 секунды)");
-            Timer timer = new Timer();
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        // Можем продолжать работу на установленной сетке
 
         // Придумаем 200 файлов, например
         List<NetworkFile> networkFilesStack = new ArrayList<>();
         for (int i = 0; i < 200; i++) networkFilesStack.add(randomNetworkFile());
+        networkFilesStack.sort(Comparator.comparingInt(o -> o.hashCode() % (int) Math.pow(2, M_intM)));
 
         // Отправим эти выдуманные файлы в сеть через "голову"
         networkFilesStack.forEach(head::putFileToNetwork);
@@ -99,7 +92,7 @@ public class ChordManager {
             else System.out.println("EMPTY");
         });
         System.out.println("=====================================================================================");
-        NetworkFile networkFile = networkFilesStack.get(177);
+        NetworkFile networkFile = networkFilesStack.get(100);
 
         System.out.println("\nLet's find out what peer holds the file " + networkFile);
         Peer unknown = head.getPeerThatHoldingFile(networkFile.getName());
@@ -116,7 +109,7 @@ public class ChordManager {
 
         System.out.println("=====================================================================================");
 
-        NetworkFile networkFile2 = networkFilesStack.get(177);
+        NetworkFile networkFile2 = networkFilesStack.get(100);
         System.out.println("\nLet's find out what peer holds the file " + networkFile2);
         Peer unknown2 = head.getPeerThatHoldingFile(networkFile2.getName());
         System.out.println("Found " + unknown2);
@@ -124,15 +117,6 @@ public class ChordManager {
 
         // Завершим потоки, чтобы выйти из программы
         peers.forEach(Peer::stopDaemons);
-    };
-
-    public static void main(String[] args) {
-
-        ChordManager manager = new ChordManager();
-
-        Thread thread = new Thread(manager.test1);
-        thread.start();
-
     }
 
 }

@@ -9,6 +9,15 @@ public class Peer extends ChordNode {
     private Timer stabilTimer = new Timer();
     private Timer fixTimer = new Timer();;
 
+    private static void waitFor(int milliseconds){
+        try {
+            System.out.println("Обработка... (Ждите)");
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     public String getNetName() {
         return netName;
     }
@@ -19,10 +28,10 @@ public class Peer extends ChordNode {
         networkFiles = new ArrayList<>();
 
         TimerTask stabilTask = new TimerTask() {@Override public void run() { stabilize();}};
-        stabilisation = new Thread(() -> stabilTimer.schedule(stabilTask, 100, 100));
+        stabilisation = new Thread(() -> stabilTimer.schedule(stabilTask, 50, 100));
 
         TimerTask fixTask = new TimerTask() {@Override public void run() { fixFingers(); }};
-        fixer = new Thread(() -> fixTimer.schedule(fixTask, 100, 100));
+        fixer = new Thread(() -> fixTimer.schedule(fixTask, 50, 100));
     }
 
     public void startDaemons(){
@@ -36,22 +45,31 @@ public class Peer extends ChordNode {
         fixTimer.cancel();
     }
 
-    static int num = 0;
 
-    void invite(Peer newbie){
-        num += 1;
-        System.out.println("the "+ newbie.getID() + " (" + num + ") joins " + this.getID());
-        newbie.join(this);
+    private Peer findSuccPeer(int key){
+        return (Peer) findSuccessor(key);
     }
 
     void join(Peer toPeer) {
 
-        Peer peerWhoShares = null;
-        if (toPeer != null) peerWhoShares = (Peer) toPeer.findSuccessor(getID());
         super.join(toPeer);
-        if (peerWhoShares != null) peerWhoShares.shareWith(this);
-        //startDaemons(); // не надо тута начинать потоки, надо где-то там и потом
+        if (toPeer != null) findSuccPeer(getID()).shareWith(this);
+        // Запустим потоки фикса и стабилизации
+        startDaemons();
     }
+
+    @Override
+    public void disconnect() {
+        stopDaemons();
+        waitFor(250);
+        Peer neighbour = (Peer) this.successor();
+        super.disconnect();
+        // переносим все файлы на соседей
+        networkFiles.forEach(neighbour::addFile);
+        networkFiles.clear();
+    }
+
+
 
     private void shareWith(Peer node){
 
@@ -89,16 +107,6 @@ public class Peer extends ChordNode {
         for (NetworkFile f:networkFiles)
             if (f.getName().equals(filename)) return f;
         return null;
-    }
-
-
-    @Override
-    public void disconnect() {
-        Peer neighbour = (Peer) this.successor();
-        super.disconnect();
-        //TO-DO - переносим все файлы на соседей
-        networkFiles.forEach(neighbour::addFile);
-        networkFiles.clear();
     }
 
     private void addFile(NetworkFile file){

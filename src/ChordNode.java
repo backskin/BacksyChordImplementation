@@ -1,3 +1,5 @@
+import java.util.Random;
+
 public abstract class ChordNode {
 
     final int powTwo;
@@ -17,7 +19,6 @@ public abstract class ChordNode {
     private int identifier;
     private Finger[] fingers;
     private ChordNode predecessor = null;
-    private int lastFinger = 0;
 
     int getID() {
         return identifier;
@@ -54,39 +55,29 @@ public abstract class ChordNode {
         predecessor.fingers[0].node = fingers[0].node;
         fingers[0].node.predecessor = predecessor;
         fingers[0].node.updateOthers();
-        for (int i = 0; i < fingers.length; i++) {
-
-            int id = identifier - fingers[i].exponentOfTwo;
-            id = id < 0 ? powTwo : id;
-            findPredecessor(id).updateFingerTable(fingers[0].node, i);
-        }
-        predecessor = null;
-//        TO-DO: пока нормально отконнектиться не получается, если делать последнюю строчку
-//        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
     }
 
     protected final void stabilize(){
 
-        ChordNode x = fingers[0].node.predecessor;
-        if (inRange(x.identifier, identifier, fingers[0].node.identifier, 0))
-            fingers[0].node = x;
-
-        fingers[0].node.checkPredecessor(this);
+        ChordNode successor = fingers[0].node;
+        ChordNode x = successor.predecessor;
+            if (inRange(x.identifier, identifier, successor.identifier, 0))
+                fingers[0].node = x;
+            successor.checkPredecessor(this);
     }
 
     private void checkPredecessor(ChordNode node){
 
-        if (predecessor == null || inRange (node.identifier,
-                predecessor.identifier, identifier, 0))
+        if (predecessor == null ||
+                inRange (node.identifier, predecessor.identifier, identifier, 0))
 
             predecessor = node;
     }
 
     protected final void fixFingers(){
-//        lastFinger += 1;
-//        if (lastFinger >= fingers.length) lastFinger = 0;
-        for (Finger finger: fingers) finger.node = findSuccessor(finger.start);
-//        fingers[lastFinger].node = findSuccessor(fingers[lastFinger].start);
+
+        int fnum = (new Random()).nextInt(fingers.length);
+          fingers[fnum].node = findSuccessor(fingers[fnum].start);
     }
 
     private ChordNode findPredecessor(int id){
