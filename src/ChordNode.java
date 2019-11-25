@@ -54,13 +54,13 @@ public abstract class ChordNode {
         predecessor.fingers[0].node = fingers[0].node;
         fingers[0].node.predecessor = predecessor;
         fingers[0].node.updateOthers();
+        for (int i = 0; i < fingers.length; i++) {
+
+            int id = identifier - fingers[i].exponentOfTwo;
+            id = id < 0 ? powTwo : id;
+            findPredecessor(id).updateFingerTable(fingers[0].node, i);
+        }
         predecessor = null;
-//        for (int i = 0; i < fingers.length; i++) {
-//
-//            int id = identifier - fingers[i].exponentOfTwo;
-//            id = id < 0 ? powTwo : id;
-//            findPredecessor(id).updateFingerTable(fingers[0].node, i);
-//        }
 //        TO-DO: пока нормально отконнектиться не получается, если делать последнюю строчку
 //        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
     }
