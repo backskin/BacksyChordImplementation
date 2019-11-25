@@ -23,6 +23,7 @@ public abstract class ChordNode {
         return identifier;
     }
 
+    protected ChordNode successor() { return fingers[0].node; }
     protected ChordNode predecessor() {
         return predecessor;
     }
@@ -52,15 +53,15 @@ public abstract class ChordNode {
     public void disconnect(){
         predecessor.fingers[0].node = fingers[0].node;
         fingers[0].node.predecessor = predecessor;
-
-        for (int i = 0; i < fingers.length; i++) {
-
-            int id = identifier - fingers[i].exponentOfTwo;
-            id = id < 0 ? powTwo : id;
-            findPredecessor(id).updateFingerTable(fingers[0].node, i);
-        }
-//        TO-DO: пока нормально отконнектиться не получается, если делать последние две строки
-//        predecessor = null;
+        fingers[0].node.updateOthers();
+        predecessor = null;
+//        for (int i = 0; i < fingers.length; i++) {
+//
+//            int id = identifier - fingers[i].exponentOfTwo;
+//            id = id < 0 ? powTwo : id;
+//            findPredecessor(id).updateFingerTable(fingers[0].node, i);
+//        }
+//        TO-DO: пока нормально отконнектиться не получается, если делать последнюю строчку
 //        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
     }
 
@@ -70,10 +71,10 @@ public abstract class ChordNode {
         if (inRange(x.identifier, identifier, fingers[0].node.identifier, 0))
             fingers[0].node = x;
 
-        fingers[0].node.checkAsPredecessor(this);
+        fingers[0].node.checkPredecessor(this);
     }
 
-    private void checkAsPredecessor(ChordNode node){
+    private void checkPredecessor(ChordNode node){
 
         if (predecessor == null || inRange (node.identifier,
                 predecessor.identifier, identifier, 0))
@@ -118,10 +119,12 @@ public abstract class ChordNode {
 
     private void updateOthers(){
         for (int i = 0, fingersLength = fingers.length; i < fingersLength; i++)
-            findPredecessor(identifier - fingers[i].exponentOfTwo)
+            findPredecessor(identifier - fingers[i].exponentOfTwo / 2)
                     .updateFingerTable(this, i);
     }
 
+    // Перевод на русский: если узел sNode должен быть i-ой записью в таблице маршрутизации текущего узла,
+    // то записываем узел sNode в узел и предлагаем предшественнику проверить то же самое.
     private void updateFingerTable(ChordNode sNode, int i) {
         if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)) {
             fingers[i].node = sNode;

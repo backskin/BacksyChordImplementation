@@ -32,7 +32,7 @@ public class ChordManager {
         System.out.println(peer + " has been disconnected :(");
     }
 
-    public static void main(String[] args) {
+    private Runnable test1 = () -> {
 
         // Пусть это -  наши начальные данные
         int M_intM = 10;
@@ -67,7 +67,14 @@ public class ChordManager {
 
         // Запустим потоки фикса и стабилизации на всех устройствах
         peers.forEach(Peer::startDaemons);
-
+        //Подождем пока потоки отработают хоть немного
+        try {
+            System.out.println("Обработка на компах... (Ждите 2-3 секунды)");
+            Timer timer = new Timer();
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         // Можем продолжать работу на установленной сетке
 
         // Придумаем 200 файлов, например
@@ -103,11 +110,8 @@ public class ChordManager {
         System.out.println("========================= Let's disconnect some poor guys ===========================");
 
         disconnectGuy(peers.get(4));
-
         disconnectGuy(peers.get(7));
-
         disconnectGuy(peers.get(12));
-
         disconnectGuy(unknown);
 
         System.out.println("=====================================================================================");
@@ -120,5 +124,15 @@ public class ChordManager {
 
         // Завершим потоки, чтобы выйти из программы
         peers.forEach(Peer::stopDaemons);
+    };
+
+    public static void main(String[] args) {
+
+        ChordManager manager = new ChordManager();
+
+        Thread thread = new Thread(manager.test1);
+        thread.start();
+
     }
+
 }

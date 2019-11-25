@@ -94,7 +94,7 @@ public class Peer extends ChordNode {
 
     @Override
     public void disconnect() {
-        Peer neighbour = (Peer) this.findSuccessor(getID()+1);
+        Peer neighbour = (Peer) this.successor();
         super.disconnect();
         //TO-DO - переносим все файлы на соседей
         networkFiles.forEach(neighbour::addFile);
