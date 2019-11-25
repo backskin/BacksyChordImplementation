@@ -6,6 +6,8 @@ public class Peer extends ChordNode {
     private String IPAddress;
     private Thread stabilisation;
     private Thread fixer;
+    private Timer stabilTimer = new Timer();
+    private Timer fixTimer = new Timer();;
 
     public String getIPAddress() {
         return IPAddress;
@@ -16,16 +18,11 @@ public class Peer extends ChordNode {
         IPAddress = address;
         networkFiles = new ArrayList<>();
 
-        stabilisation = new Thread(() -> (new Timer()).schedule(
-                new TimerTask() {@Override public void run() { stabilize();}},
-                100, 100));
+        TimerTask stabilTask = new TimerTask() {@Override public void run() { stabilize();}};
+        stabilisation = new Thread(() -> stabilTimer.schedule(stabilTask, 100, 100));
 
-
-        fixer = new Thread(() -> (new Timer()).schedule(
-                new TimerTask() {@Override public void run() { fixFingers(); }},
-                100, 100));
-
-
+        TimerTask fixTask = new TimerTask() {@Override public void run() { fixFingers(); }};
+        fixer = new Thread(() -> fixTimer.schedule(fixTask, 100, 100));
     }
 
     public void startDaemons(){
@@ -35,8 +32,8 @@ public class Peer extends ChordNode {
     }
 
     public void stopDaemons(){
-        stabilisation.interrupt();
-        fixer.interrupt();
+        stabilTimer.cancel();
+        fixTimer.cancel();
     }
 
     static int num = 0;

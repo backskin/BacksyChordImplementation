@@ -52,6 +52,8 @@ public class ChordManager {
         peers.add(head);
         peers.sort(Comparator.comparingInt(ChordNode::getID));
 
+        // Запустим потоки фикса и стабилизации на всех устройствах
+        peers.forEach(Peer::startDaemons);
         //Подождем пока потоки отработают хоть немного
         try {
             System.out.println("Обработка на компах... (Ждите 1-2 секунды)");
@@ -71,13 +73,18 @@ public class ChordManager {
             head.putFileToNetwork(file);
         };
 
-        // Посмотрим какие файлы куда отправились
+        // Посмотрим какие файлы куда отправились :^)
         peers.forEach(peer -> {
-            System.out.println("\nPeer <" + peer.getIPAddress() + "> (id=" + peer.getID()+")");
-            System.out.println("Files list: ");
-            peer.getLocalFiles().forEach(file -> System.out.println("       "+file
+            System.out.println("\n\nPeer <" + peer.getIPAddress() + "> (id=" + peer.getID()+")");
+            System.out.print("Files list: ");
+            if (peer.getLocalFiles().size() > 0)
+                peer.getLocalFiles().forEach(file -> System.out.print("\n       "+file
                     + " | point="+ ((file.hashCode() % head.powTwo + head.powTwo) % head.powTwo)));
+            else System.out.println("EMPTY");
         });
-        //peers.forEach(Peer::stopDaemons);
+        System.out.println();
+
+        // Завершим потоки, чтобы выйти из программы
+        peers.forEach(Peer::stopDaemons);
     }
 }
