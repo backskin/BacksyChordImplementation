@@ -57,12 +57,13 @@ public abstract class ChordNode {
 
         for (int i = 0; i < fingers.length; i++) {
 
-            int id = identifier - fingers[i].exponentOfTwo * 2;
+            int id = identifier - fingers[i].exponentOfTwo;
             id = id < 0 ? powTwo : id;
             findPredecessor(id).updateFingerTable(fingers[0].node, i, 1);
         }
-        predecessor = null;
-        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
+//        TO-DO: пока нормально отконнектиться не получается, если делать последние две строки
+//        predecessor = null;
+//        for (int i = 0; i < fingers.length; i++) fingers[i].node = this;
     }
 
     protected final void stabilize(){
@@ -117,16 +118,15 @@ public abstract class ChordNode {
     }
 
     private void updateOthers(){
-
         for (int i = 0, fingersLength = fingers.length; i < fingersLength; i++)
             findPredecessor(identifier - fingers[i].exponentOfTwo)
                     .updateFingerTable(this, i, 1);
     }
 
-    private void updateFingerTable(ChordNode sNode, int i, int deepness){
-               if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)){
+    private void updateFingerTable(ChordNode sNode, int i, int deepness) {
+        if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)) {
             fingers[i].node = sNode;
-            predecessor.updateFingerTable(sNode, i, deepness+1);
+            predecessor.updateFingerTable(sNode, i, deepness + 1);
         }
     }
 
