@@ -38,7 +38,6 @@ public abstract class ChordNode {
     }
 
     protected final ChordNode findSuccessorFor(int id){
-        id = (id % powTwo + powTwo) % powTwo;
         return findPredecessor(id).fingers[0].node;
     }
 
@@ -90,27 +89,8 @@ public abstract class ChordNode {
     private ChordNode findPredecessor(int id){
 
         ChordNode t = this;
-        int deepness = 1;
-        while (true){
-            if (deepness % 2000 == 0){
-                System.out.println("\n[findPred (88 line)]" +
-                        "\nI'm stuck :( PLS HELP" +
-                        "\nid="+id + " orig id="+identifier);
-            }
-            else deepness++;
-
-            Finger finger = t.fingers[0];
-            int fnid = finger.node.identifier;
-            int tid = t.identifier;
-            boolean bool = inRange(id, tid, fnid, 1);
-            if (bool) break;
-
+        while (!inRange(id, t.identifier, t.fingers[0].node.identifier, 1))
             t = t.closestPrecedingNode(id);
-        }
-
-//        while (!inRange(id, t.identifier, t.fingers[0].node.identifier, 1))
-//            t = t.closestPrecedingNode(id);
-
         return t;
     }
 
@@ -135,22 +115,14 @@ public abstract class ChordNode {
     }
 
     private void updateOthers(){
-        System.out.println("id="+identifier);
 
-        for (int i = 0, fingersLength = fingers.length; i < fingersLength; i++){
-            findPredecessor(identifier - fingers[i].exponentOfTwo).updateFingerTable(this, i, 1);
-            System.out.print(" ["+i+"]");
-        }
-        System.out.println();
+        for (int i = 0, fingersLength = fingers.length; i < fingersLength; i++)
+            findPredecessor(identifier - fingers[i].exponentOfTwo)
+                    .updateFingerTable(this, i, 1);
     }
 
     private void updateFingerTable(ChordNode sNode, int i, int deepness){
-        if (deepness % 5000 == 0) {
-            System.out.println("\n[upFingTabl (131 line)]" +
-                    "\nI'm stuck :( PLS HELP" +
-                    "\nid="+sNode.identifier);
-        }
-        if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)){
+               if (inRange(sNode.identifier, fingers[i].start, fingers[i].node.identifier, -1)){
             fingers[i].node = sNode;
             predecessor.updateFingerTable(sNode, i, deepness+1);
         }
@@ -168,9 +140,9 @@ public abstract class ChordNode {
         }
         boolean stuck = id > left && id < right;
         switch (Integer.compare(border,0)){
-            case -1: return (id == left % powTwo) || stuck;
+            case -1: return (id % powTwo == left % powTwo) || stuck;
             case  0: return stuck;
-            case  1: return (id == right % powTwo) || stuck;
+            case  1: return (id % powTwo == right % powTwo) || stuck;
             default: return false;
         }
     }
